@@ -14,16 +14,6 @@ def get_labels(image_dir: str, csv_file: str) -> list[str]:
     return df[label_col].tolist()
 
 
-def balanced_accuracy(y_true: tf.Tensor, y_pred: tf.Tensor) -> float:
-    y_true = K.argmax(y_true, axis=-1)
-    y_pred = K.argmax(y_pred, axis=-1)
-
-    recall = K.mean(K.equal(y_true, y_pred)[K.equal(y_true, 1)])
-    specificity = K.mean(K.equal(y_true, y_pred)[K.equal(y_true, 0)])
-    
-    return (recall + specificity) / 2
-
-
 def check_gpu() -> None:
     physical_devices = tf.config.list_physical_devices('GPU')
 
