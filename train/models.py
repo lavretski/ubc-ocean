@@ -1,8 +1,10 @@
 from tensorflow import keras
 from tensorflow.keras import layers
+import tensorflow as tf
 
 
-def make_model(input_shape):
+def make_model(input_shape: tuple[int, int], num_classes: int) \
+    -> tf.keras.Model:
         inputs = keras.Input(shape=input_shape)
 
         x = layers.Rescaling(1.0 / 255)(inputs)
@@ -35,5 +37,5 @@ def make_model(input_shape):
         x = layers.GlobalAveragePooling2D()(x)
 
         x = layers.Dropout(0.5)(x)
-        outputs = layers.Dense(5, activation="softmax")(x)
+        outputs = layers.Dense(num_classes, activation="softmax")(x)
         return keras.Model(inputs, outputs)
