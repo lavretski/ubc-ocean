@@ -12,7 +12,8 @@ def main(cfg_: DictConfig) -> None:
           cfg["train_csv_file"], cfg["test_csv_file"],
           cfg["image_size"], cfg["batch_size"],
           cfg["validation_split"], cfg["random_seed"],
-          cfg["epochs"], cfg["lr"], cfg["num_classes"])
+          cfg["epochs"], cfg["lr"], cfg["num_classes"],
+          cfg["save_model_path"])
 
 if __name__ == "__main__":
     main()

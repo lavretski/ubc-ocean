@@ -1,7 +1,8 @@
-from keras import backend as K
 import pandas as pd
 from pathlib import Path
 import tensorflow as tf
+from keras.metrics import SparseCategoricalAccuracy
+
 
 def get_labels(image_dir: str, csv_file: str) -> list[str]:
     df = pd.read_csv(csv_file)
@@ -22,3 +23,19 @@ def check_gpu() -> None:
         print("Physical devices:", physical_devices)
     else:
         print("GPU is not available")
+
+
+class BalancedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
+    def __init__(self, name='balanced_sparse_categorical_accuracy', dtype=None):
+        super().__init__(name, dtype=dtype)
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        y_flat = y_true
+        if y_true.shape.ndims == y_pred.shape.ndims:
+            y_flat = tf.squeeze(y_flat, axis=[-1])
+        y_true_int = tf.cast(y_flat, tf.int32)
+
+        cls_counts = tf.math.bincount(y_true_int)
+        cls_counts = tf.math.reciprocal_no_nan(tf.cast(cls_counts, self.dtype))
+        weight = tf.gather(cls_counts, y_true_int)
+        return super().update_state(y_true, y_pred, sample_weight=weight)
