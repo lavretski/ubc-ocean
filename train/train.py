@@ -3,14 +3,15 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from .models import make_model
 from .tools import get_labels, check_gpu, BalancedSparseCategoricalAccuracy
-from tools import cancer_to_number
+from ..tools import cancer_to_number
 
 
 def train(train_data_dir: str, test_data_dir: str, train_csv_file: str,
           test_csv_file: str, image_size: tuple[int, int],
           batch_size: int, validation_split: int,
           random_seed: int, epochs: int, lr: float,
-          num_classes: int, save_model_path: str) -> None:
+          num_classes: int, save_model_path: st,
+          rescale_multiplier: float) -> None:
     labels = get_labels(train_data_dir, train_csv_file)
     integer_labels = [cancer_to_number[label] for label in labels]
 
@@ -20,11 +21,12 @@ def train(train_data_dir: str, test_data_dir: str, train_csv_file: str,
         validation_split=validation_split,
         subset="both",
         seed=random_seed,
-        image_size=image_size,
         batch_size=batch_size,
         label_mode='int')
 
-    data_augmentation = keras.Sequential([layers.RandomFlip("horizontal_and_vertical")])
+    data_augmentation = keras.Sequential([layers.RandomFlip("horizontal_and_vertical"),
+                                          layers.Rescaling(rescale_multiplier),
+                                          layers.Resizing(*image_size)])
 
     train_ds = train_ds.map(lambda img, label: 
                                         (data_augmentation(img), 

@@ -7,8 +7,7 @@ def make_model(input_shape: tuple[int, int], num_classes: int) \
     -> tf.keras.Model:
         inputs = keras.Input(shape=input_shape)
 
-        x = layers.Rescaling(1.0 / 255)(inputs)
-        x = layers.Conv2D(128, 3, strides=2, padding="same")(x)
+        x = layers.Conv2D(128, 3, strides=2, padding="same")(inputs)
         x = layers.BatchNormalization()(x)
         x = layers.Activation("relu")(x)
 
