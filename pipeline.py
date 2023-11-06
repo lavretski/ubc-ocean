@@ -1,19 +1,33 @@
+import pydoc
 import hydra
 from omegaconf import DictConfig, OmegaConf
-from simple_predictor import simple_predictor
-from train.train import train
 
 
-@hydra.main(config_path="configs", config_name="configs")
-def main(cfg_: DictConfig) -> None:
+@hydra.main(config_path="configs", config_name="configs", version_base=None)
+def main(cfg_: DictConfig):
     cfg = OmegaConf.to_container(cfg_, resolve=True)
-    # simple_predictor(cfg["train_csv_file"], cfg["test_csv_file"], cfg["submission_csv_file"])
-    train(cfg["train_data_dir"], cfg["test_data_dir"],
-          cfg["train_csv_file"], cfg["test_csv_file"],
-          cfg["image_size"], cfg["batch_size"],
-          cfg["validation_split"], cfg["random_seed"],
-          cfg["epochs"], cfg["lr"], cfg["num_classes"],
-          cfg["save_model_path"], cfg["rescale_multiplier"])
 
-if __name__ == "__main__":
+    tasks = cfg["tasks"]
+    tasks_descr = cfg["tasks_descr"]
+
+    for task in tasks:
+        print(task)
+        args = tasks_descr[task]
+        script_id = args.pop("script_id")
+        for arg_key in args:
+            if not isinstance(args[arg_key], dict):
+                continue
+            if "type" in args[arg_key]:
+                model_cfg = args[arg_key]
+                model = pydoc.locate(model_cfg.pop("type"))(**model_cfg)
+                args[arg_key] = model
+
+        runner = pydoc.locate(script_id)
+        if callable(runner):
+            runner(**args)
+        else:
+            runner.main(**args)
+
+
+if __name__ == '__main__':
     main()

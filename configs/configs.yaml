@@ -1,9 +1,38 @@
 defaults:
   - _self_
   - train_configs
+  - model/scratch_model
 
 train_csv_file: /kaggle/input/UBC-OCEAN/train.csv
 test_csv_file: /kaggle/input/UBC-OCEAN/test.csv
 submission_csv_file: /kaggle/working/submission.csv
 train_data_dir: /kaggle/input/UBC-OCEAN/train_thumbnails
 test_data_dir: /kaggle/input/UBC-OCEAN/test_thumbnails
+
+
+tasks:
+  - train
+  - make_submission
+  
+tasks_descr:
+  train:
+    script_id: train.train
+    data_dir: ${train_data_dir}
+    csv_file: ${train_csv_file}
+    image_size: ${image_size}
+    batch_size: ${batch_size}
+    validation_split: ${validation_split}
+    random_seed: ${random_seed}
+    epochs: ${epochs}
+    lr: ${lr}
+    num_classes: ${num_classes}
+    save_model_path: ${save_model_path}
+    rescale_multiplier: ${rescale_multiplier}
+
+  make_submission:
+    script_id: scripts.make_submission
+    model: ${model}
+    test_csv_file: ${test_csv_file}
+    test_data_dir: ${test_data_dir}
+    submission_csv_file: ${submission_csv_file}
+    

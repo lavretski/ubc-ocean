@@ -1,0 +1,4 @@
+type: models.scratch_model.ScratchModel
+model_file: metadata/scratch_model.h5
+image_size: [512, 512]
+rescale_multiplier: 0.00392156863
