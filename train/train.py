@@ -1,16 +1,16 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from .models import make_model
-from .tools import get_labels, check_gpu, BalancedSparseCategoricalAccuracy
-from ..tools import cancer_to_number
+from train.models import make_model
+from train.tools import get_labels, check_gpu, BalancedSparseCategoricalAccuracy
+from tools import cancer_to_number
 
 
 def train(train_data_dir: str, test_data_dir: str, train_csv_file: str,
           test_csv_file: str, image_size: tuple[int, int],
           batch_size: int, validation_split: int,
           random_seed: int, epochs: int, lr: float,
-          num_classes: int, save_model_path: st,
+          num_classes: int, save_model_path: str,
           rescale_multiplier: float) -> None:
     labels = get_labels(train_data_dir, train_csv_file)
     integer_labels = [cancer_to_number[label] for label in labels]

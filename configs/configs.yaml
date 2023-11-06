@@ -5,3 +5,5 @@ defaults:
 train_csv_file: /kaggle/input/UBC-OCEAN/train.csv
 test_csv_file: /kaggle/input/UBC-OCEAN/test.csv
 submission_csv_file: /kaggle/working/submission.csv
+train_data_dir: /kaggle/input/UBC-OCEAN/train_thumbnails
+test_data_dir: /kaggle/input/UBC-OCEAN/test_thumbnails

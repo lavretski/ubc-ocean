@@ -6,7 +6,7 @@ import numpy as np
 from ..tools import number_to_cancer
 
 
-class ScratchInferenceModel(Model):
+class ScratchModel(Model):
     def __init__(self, model_file: str, image_size: tuple[int, int],
                  rescale_multiplier: float):
         self._model = load_model(model_file)
