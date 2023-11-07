@@ -4,20 +4,18 @@ from models.model import Model
 from pathlib import Path
 import cv2
 
-
 def make_submission(model: Model, test_csv_file: str, test_data_dir: str, 
                     submission_csv_file: str) -> None:
     df_test = pd.read_csv(test_csv_file)
+    labels = []
 
-    images = [cv2.imread(f"{Path(test_data_dir) / str(image_id)}_thumbnail.png")
-                   for image_id in df_test['image_id'].tolist()]
-    
-    labels = model.predict(images)
+    for image_id in df_test['image_id']:
+        image = cv2.imread(f"{Path(test_data_dir) / str(image_id)}_thumbnail.png")
+        label = model.predict(image)
+        labels.append(label)
 
     df_test.drop(["image_width", "image_height"], axis=1, inplace=True)
     df_test['label'] = labels
     df_test.to_csv(submission_csv_file, index=False)
 
-
 main = make_submission
-    

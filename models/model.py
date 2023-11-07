@@ -4,5 +4,5 @@ import numpy as np
 
 class Model(ABC):
     @abstractmethod
-    def predict(self, images: list[np.ndarray]) -> list[str]:
+    def predict(self, image: np.ndarray) -> str:
         pass
