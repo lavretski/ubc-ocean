@@ -20,5 +20,5 @@ class ScratchModel(Model):
         return self._postprocess(prediction)
 
     def _postprocess(self, model_output: np.ndarray):
-        model_output = np.argmax(model_output, axis=-1)
-        return [number_to_cancer[x] for x in model_output]
+        model_output = np.argmax(model_output, axis=-1)[0]
+        return number_to_cancer[model_output]
