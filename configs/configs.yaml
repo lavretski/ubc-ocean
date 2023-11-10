@@ -17,6 +17,7 @@ tasks:
 tasks_descr:
   train:
     script_id: train.train
+    model: ${train_model}
     data_dir: ${train_data_dir}
     csv_file: ${train_csv_file}
     image_size: ${image_size}
@@ -25,7 +26,6 @@ tasks_descr:
     random_seed: ${random_seed}
     epochs: ${epochs}
     lr: ${lr}
-    num_classes: ${num_classes}
     save_model_path: ${save_model_path}
     rescale_multiplier: ${rescale_multiplier}
 

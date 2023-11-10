@@ -1,9 +1,10 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
+import keras_cv
 
 
-def make_model(input_shape: tuple[int, int], num_classes: int) \
+def make_scratch_model(input_shape: tuple[int, int], num_classes: int) \
     -> tf.keras.Model:
         inputs = keras.Input(shape=input_shape)
 
@@ -38,3 +39,22 @@ def make_model(input_shape: tuple[int, int], num_classes: int) \
         x = layers.Dropout(0.5)(x)
         outputs = layers.Dense(num_classes, activation="softmax")(x)
         return keras.Model(inputs, outputs)
+
+
+def make_aritra_model() -> tf.keras.Model:
+    resnet_backbone = keras_cv.models.ResNetV2Backbone.from_preset("resnet152_v2")
+    resnet_backbone.trainable = False
+
+    image_inputs = resnet_backbone.input
+    image_embeddings = resnet_backbone(image_inputs)
+    image_embeddings = keras.layers.GlobalAveragePooling2D()(image_embeddings)
+
+    x = keras.layers.BatchNormalization(epsilon=1e-05, momentum=0.1)(image_embeddings)
+    x = keras.layers.Dense(units=1024, activation="relu")(x)
+    x = keras.layers.Dropout(0.1)(x)
+    x = keras.layers.Dense(units=512, activation="relu")(x)
+    x = keras.layers.Dropout(0.1)(x)
+    x = keras.layers.Dense(units=256, activation="relu")(x)
+    outputs = keras.layers.Dense(units=5, activation="softmax")(x)
+
+    return keras.Model(inputs=image_inputs, outputs=outputs)
