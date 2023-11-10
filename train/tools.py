@@ -2,14 +2,18 @@ import pandas as pd
 from pathlib import Path
 import tensorflow as tf
 from keras.metrics import SparseCategoricalAccuracy
+from tools import cancer_to_number
+from sklearn.utils import class_weight
+import numpy as np
 
 
-def get_labels(image_dir: str, csv_file: str) -> list[str]:
+def get_labels(image_dir: str, csv_file: str, 
+               use_thumbnails: bool) -> list[str]:
     df = pd.read_csv(csv_file)
     image_id_col = "image_id"
     label_col = "label"
     df[image_id_col] = df[image_id_col].astype('str')
-    df[image_id_col] = df[image_id_col] + "_thumbnail"
+    df[image_id_col] = df[image_id_col] + ("_thumbnail" if use_thumbnails else "")
     image_files = [f.stem for f in Path(image_dir).glob('*.png')]
     df = df[df[image_id_col].isin(image_files)]
     return df[label_col].tolist()
@@ -39,3 +43,16 @@ class BalancedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
         cls_counts = tf.math.reciprocal_no_nan(tf.cast(cls_counts, self.dtype))
         weight = tf.gather(cls_counts, y_true_int)
         return super().update_state(y_true, y_pred, sample_weight=weight)
+
+
+
+def get_class_weights(image_dir: str, csv_file: str, 
+                      use_thumbnails: bool) -> dict[int, float]:
+    labels = get_labels(image_dir, csv_file, use_thumbnails)
+    int_labels = [cancer_to_number[label] for label in labels]
+
+    weights = class_weight.compute_sample_weight('balanced', int_labels)
+
+    class_weights = {label: weights[i] for i, label in enumerate(int_labels)}
+
+    return class_weights
