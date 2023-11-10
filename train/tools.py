@@ -8,14 +8,18 @@ import numpy as np
 from tensorflow.keras import layers
 
 
-def get_labels(image_dir: str, csv_file: str, 
-               use_thumbnails: bool) -> list[str]:
+def get_image_paths(image_dir: str, csv_file: str,
+                    use_tma: bool, use_thumbnails: bool) -> list[str]:
     df = pd.read_csv(csv_file)
+
+    if use_tma:
+        df = df[df["is_tma"] == False]
+    
     image_id_col = "image_id"
     label_col = "label"
     df[image_id_col] = df[image_id_col].astype('str')
-    df[image_id_col] = df[image_id_col] + ("_thumbnail" if use_thumbnails else "")
-    image_files = [f.stem for f in Path(image_dir).glob('*.png')]
+    df[image_id_col] = df[image_id_col] + f"{'_thumbnail' if use_thumbnails else ''}.png"
+    image_files = [f.name for f in Path(image_dir).glob('*.png')]
     df = df[df[image_id_col].isin(image_files)]
     return df[label_col].tolist()
 

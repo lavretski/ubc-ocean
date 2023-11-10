@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from train.tools import (get_labels, check_gpu, \
+from train.tools import (get_image_paths, check_gpu, \
     BalancedSparseCategoricalAccuracy, \
     get_class_weights, StandardizationLayer)
 from tools import cancer_to_number
@@ -12,18 +12,32 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
           batch_size: int, validation_split: int,
           random_seed: int, epochs: int, lr: float,
           save_model_path: str, rescale_multiplier: float,
-          use_thumbnails: bool) -> None:
-    labels = get_labels(data_dir, csv_file, use_thumbnails)
-    integer_labels = [cancer_to_number[label] for label in labels]
+          use_thumbnails: bool, use_tma: bool) -> None:
+    image_pathes = get_image_paths(data_dir, csv_file, use_tma, use_thumbnails)
 
-    train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
-        data_dir,
-        labels=integer_labels,
-        validation_split=validation_split,
-        subset="both",
-        seed=random_seed,
-        batch_size=batch_size,
-        label_mode='int')
+    num_samples = len(image_pathes)
+    num_val_samples = int(num_samples * validation_split)
+    num_train_samples = num_samples - num_val_samples
+    x = (
+        tf.data.Dataset.from_tensor_slices(image_pathes)
+        .map(read_image, num_parallel_calls=tf.data.AUTOTUNE)
+    )
+    y = tf.data.Dataset.from_tensor_slices(labels)
+
+    ds = tf.data.Dataset.zip((x, y))
+
+    val_ds = (
+        ds
+        .take(num_val_samples)
+        .batch(config.batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+    train_ds = (
+        ds
+        .skip(num_val_samples)
+        .batch(config.batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
 
     data_aug_train = keras.Sequential([layers.RandomFlip("horizontal_and_vertical"),
                                        layers.Rescaling(rescale_multiplier),

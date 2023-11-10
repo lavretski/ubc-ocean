@@ -9,6 +9,7 @@ submission_csv_file: /kaggle/working/submission.csv
 train_data_dir: /kaggle/input/UBC-OCEAN/train_thumbnails
 test_data_dir: /kaggle/input/UBC-OCEAN/test_thumbnails
 use_thumbnails: True
+use_tma: False
 
 
 tasks:
@@ -30,6 +31,7 @@ tasks_descr:
     save_model_path: ${save_model_path}
     rescale_multiplier: ${rescale_multiplier}
     use_thumbnails: ${use_thumbnails}
+    use_tma: ${use_tma}
 
   make_submission:
     script_id: scripts.make_submission
