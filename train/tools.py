@@ -20,7 +20,6 @@ def get_labels(image_dir: str, csv_file: str,
     df[image_id_col] = df[image_id_col].astype('str')
     df[image_id_col] = df[image_id_col] + f"{'_thumbnail' if use_thumbnails else ''}.png"
     image_files = [f.name for f in Path(image_dir).glob('*.png')]
-    df = df[df[image_id_col].isin(image_files)]
     return df[label_col].tolist()
 
 
@@ -38,7 +37,7 @@ class BalancedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
     def __init__(self, name='balanced_sparse_categorical_accuracy', dtype=None):
         super().__init__(name, dtype=dtype)
 
-    def update_state(self, y_true, y_pred, sample_weight=None):
+    def update_state(self, y_true: tf.Tensor, y_pred: tf.Tensor, sample_weight=None):
         y_flat = y_true
         if y_true.shape.ndims == y_pred.shape.ndims:
             y_flat = tf.squeeze(y_flat, axis=[-1])
@@ -51,9 +50,9 @@ class BalancedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
 
 
 
-def get_class_weights(image_dir: str, csv_file: str, use_tma: bool,
+def get_class_weights(image_dir: str, csv_file: str,
                       use_thumbnails: bool) -> dict[int, float]:
-    labels = get_labels(image_dir, csv_file, use_tma, use_thumbnails)
+    labels = get_labels(image_dir, csv_file, use_thumbnails)
     int_labels = [cancer_to_number[label] for label in labels]
     class_weights = len(int_labels) - np.bincount(int_labels)
     class_weights = class_weights / np.sum(class_weights)
@@ -62,5 +61,5 @@ def get_class_weights(image_dir: str, csv_file: str, use_tma: bool,
 
 
 class StandardizationLayer(layers.Layer):
-    def call(self, inputs):
+    def call(self, inputs: tf.Tensor) -> tf.Tensor:
         return tf.map_fn(tf.image.per_image_standardization, inputs)

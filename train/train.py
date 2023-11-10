@@ -25,13 +25,15 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
         batch_size=batch_size,
         label_mode='int')
 
-    data_aug_train = keras.Sequential([layers.RandomFlip("horizontal_and_vertical"),
-                                       layers.Rescaling(rescale_multiplier),
-                                       #StandardizationLayer(),
-                                       layers.Resizing(*image_size)])
+    data_aug_train = keras.Sequential([#layers.RandomFlip("horizontal_and_vertical"),
+                                       #layers.Rescaling(rescale_multiplier),
+                                       layers.Resizing(*image_size),
+                                       StandardizationLayer(),])
 
-    data_aug_val = keras.Sequential([layers.Rescaling(rescale_multiplier),
-                                     layers.Resizing(*image_size)])
+    data_aug_val = keras.Sequential([layers.Resizing(*image_size),
+                                     StandardizationLayer(),
+                                     #layers.Rescaling(rescale_multiplier)
+                                     ])
 
     train_ds = train_ds.map(lambda img, label: 
                                 (data_aug_train(img), label),
@@ -45,11 +47,7 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
 
     model.compile(optimizer=keras.optimizers.Adam(lr),
                   loss="sparse_categorical_crossentropy",
-                  metrics=[BalancedSparseCategoricalAccuracy(), "accuracy"])
-
-    print(get_class_weights(data_dir,
-                                             csv_file,
-                                             use_thumbnails))
+                  metrics=["accuracy"])
 
     model.fit(train_ds, epochs=epochs,
               validation_data=val_ds,
