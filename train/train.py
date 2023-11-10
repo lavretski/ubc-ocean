@@ -2,7 +2,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from train.tools import (get_labels, check_gpu, \
-    BalancedSparseCategoricalAccuracy)
+    BalancedSparseCategoricalAccuracy, \
+    get_class_weights)
 from tools import cancer_to_number
 
 
@@ -10,8 +11,9 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
           image_size: tuple[int, int],
           batch_size: int, validation_split: int,
           random_seed: int, epochs: int, lr: float,
-          save_model_path: str, rescale_multiplier: float) -> None:
-    labels = get_labels(data_dir, csv_file)
+          save_model_path: str, rescale_multiplier: float,
+          use_thumbnails: bool) -> None:
+    labels = get_labels(data_dir, csv_file, use_thumbnails)
     integer_labels = [cancer_to_number[label] for label in labels]
 
     train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
@@ -42,10 +44,18 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
 
     model.compile(optimizer=keras.optimizers.Adam(lr),
                   loss="sparse_categorical_crossentropy",
-                  metrics=[BalancedSparseCategoricalAccuracy()])
+                  metrics=[BalancedSparseCategoricalAccuracy(), "accuracy"])
+
+    print(get_class_weights(data_dir, csv_file, use_thumbnails))
+    import pandas as pd
+    df = pd.read_csv(csv_file)
+    print(df['label'].value_counts())
 
     model.fit(train_ds, epochs=epochs,
-              validation_data=val_ds)
+              validation_data=val_ds,
+              class_weight=get_class_weights(data_dir, 
+                                              csv_file, 
+                                              use_thumbnails))
 
     model.save(save_model_path)
 
