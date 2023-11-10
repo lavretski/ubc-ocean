@@ -5,6 +5,7 @@ from keras.metrics import SparseCategoricalAccuracy
 from tools import cancer_to_number
 from sklearn.utils import class_weight
 import numpy as np
+from tensorflow.keras import layers
 
 
 def get_labels(image_dir: str, csv_file: str, 
@@ -56,3 +57,8 @@ def get_class_weights(image_dir: str, csv_file: str,
     class_weights = {label: weights[i] for i, label in enumerate(int_labels)}
 
     return class_weights
+
+
+class StandardizationLayer(layers.Layer):
+    def call(self, inputs):
+        return tf.map_fn(tf.image.per_image_standardization, inputs)

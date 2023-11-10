@@ -3,7 +3,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from train.tools import (get_labels, check_gpu, \
     BalancedSparseCategoricalAccuracy, \
-    get_class_weights)
+    get_class_weights, StandardizationLayer)
 from tools import cancer_to_number
 
 
@@ -27,6 +27,7 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
 
     data_aug_train = keras.Sequential([layers.RandomFlip("horizontal_and_vertical"),
                                        layers.Rescaling(rescale_multiplier),
+                                       #StandardizationLayer(),
                                        layers.Resizing(*image_size)])
 
     data_aug_val = keras.Sequential([layers.Rescaling(rescale_multiplier),
@@ -46,14 +47,9 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
                   loss="sparse_categorical_crossentropy",
                   metrics=[BalancedSparseCategoricalAccuracy(), "accuracy"])
 
-    print(get_class_weights(data_dir, csv_file, use_thumbnails))
-    import pandas as pd
-    df = pd.read_csv(csv_file)
-    print(df['label'].value_counts())
-
     model.fit(train_ds, epochs=epochs,
               validation_data=val_ds,
-              class_weight=get_class_weights(data_dir, 
+              class_weight=get_class_weights(data_dir,
                                               csv_file, 
                                               use_thumbnails))
 
