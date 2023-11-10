@@ -2,9 +2,9 @@ train_model:
   type: train.models.make_aritra_model
 image_size: [256, 256]
 batch_size: 8
-validation_split: 0.
+validation_split: 0.1
 random_seed: 42
-epochs: 2
+epochs: 5
 lr: 0.001
 num_classes: 5
 save_model_path: metadata/aritra_model.h5
