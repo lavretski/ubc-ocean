@@ -8,11 +8,11 @@ import numpy as np
 from tensorflow.keras import layers
 
 
-def get_image_paths(image_dir: str, csv_file: str,
-                    use_tma: bool, use_thumbnails: bool) -> list[str]:
+def get_labels(image_dir: str, csv_file: str,
+               use_thumbnails: bool) -> list[str]:
     df = pd.read_csv(csv_file)
 
-    if use_tma:
+    if use_thumbnails:
         df = df[df["is_tma"] == False]
     
     image_id_col = "image_id"
@@ -51,16 +51,14 @@ class BalancedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
 
 
 
-def get_class_weights(image_dir: str, csv_file: str, 
+def get_class_weights(image_dir: str, csv_file: str, use_tma: bool,
                       use_thumbnails: bool) -> dict[int, float]:
-    labels = get_labels(image_dir, csv_file, use_thumbnails)
+    labels = get_labels(image_dir, csv_file, use_tma, use_thumbnails)
     int_labels = [cancer_to_number[label] for label in labels]
+    class_weights = len(int_labels) - np.bincount(int_labels)
+    class_weights = class_weights / np.sum(class_weights)
 
-    weights = class_weight.compute_sample_weight('balanced', int_labels)
-
-    class_weights = {label: weights[i] for i, label in enumerate(int_labels)}
-
-    return class_weights
+    return {idx: weight for idx, weight in enumerate(class_weights)}
 
 
 class StandardizationLayer(layers.Layer):
