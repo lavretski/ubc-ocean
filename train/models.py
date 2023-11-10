@@ -6,6 +6,7 @@ import keras_cv
 
 def make_scratch_model(input_shape: tuple[int, int], num_classes: int) \
     -> tf.keras.Model:
+    # https://keras.io/examples/vision/image_classification_from_scratch/
         inputs = keras.Input(shape=input_shape)
 
         x = layers.Conv2D(128, 3, strides=2, padding="same")(inputs)
@@ -42,6 +43,7 @@ def make_scratch_model(input_shape: tuple[int, int], num_classes: int) \
 
 
 def make_aritra_model() -> tf.keras.Model:
+    # https://www.kaggle.com/code/aritrag/kerascv-train-and-infer-on-thumbnails
     resnet_backbone = keras_cv.models.ResNetV2Backbone.from_preset("resnet152_v2")
     resnet_backbone.trainable = False
 
