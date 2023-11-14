@@ -8,21 +8,6 @@ import numpy as np
 from tensorflow.keras import layers
 
 
-def get_labels(image_dir: str, csv_file: str,
-               use_thumbnails: bool) -> list[str]:
-    df = pd.read_csv(csv_file)
-
-    if use_thumbnails:
-        df = df[df["is_tma"] == False]
-    
-    image_id_col = "image_id"
-    label_col = "label"
-    df[image_id_col] = df[image_id_col].astype('str')
-    df[image_id_col] = df[image_id_col] + f"{'_thumbnail' if use_thumbnails else ''}.png"
-    image_files = [f.name for f in Path(image_dir).glob('*.png')]
-    return df[label_col].tolist()
-
-
 def check_gpu() -> None:
     physical_devices = tf.config.list_physical_devices('GPU')
 
@@ -49,17 +34,9 @@ class BalancedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
         return super().update_state(y_true, y_pred, sample_weight=weight)
 
 
-
-def get_class_weights(image_dir: str, csv_file: str,
-                      use_thumbnails: bool) -> dict[int, float]:
-    labels = get_labels(image_dir, csv_file, use_thumbnails)
-    int_labels = [cancer_to_number[label] for label in labels]
-    class_weights = len(int_labels) - np.bincount(int_labels)
-    class_weights = class_weights / np.sum(class_weights)
-
-    return {idx: weight for idx, weight in enumerate(class_weights)}
-
-
-class StandardizationLayer(layers.Layer):
-    def call(self, inputs: tf.Tensor) -> tf.Tensor:
-        return tf.map_fn(tf.image.per_image_standardization, inputs)
+def read_image(image_path: str, image_size: tuple[int, int]) -> tf.Tensor:
+    file = tf.io.read_file(image_path)
+    image = tf.io.decode_png(file, 3)
+    image = tf.image.resize(image, image_size)
+    image = tf.image.per_image_standardization(image)
+    return image

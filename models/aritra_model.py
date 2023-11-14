@@ -4,17 +4,17 @@ from keras import layers
 import numpy as np
 from tools import number_to_cancer
 import keras
+from train.tools import read_image
+from keras_cv.models import ResNetV2Backbone
 
 
 class AritraModel(Model):
-    def __init__(self, model_file: str, image_size: tuple[int, int],
-                 rescale_multiplier: float):
-        self._model = load_model(model_file, compile=False)
-        self._preprocess_f = keras.Sequential([layers.Rescaling(rescale_multiplier),
-                                               layers.Resizing(*image_size)])
+    def __init__(self, model_file: str, image_size: tuple[int, int]):
+        custom_objects = {'ResNetV2Backbone': ResNetV2Backbone}
+        self._model = load_model(model_file, custom_objects=custom_objects, compile=False)
 
     def predict(self, image: np.ndarray) -> str:
-        proc_image = self._preprocess_f(image)
+        proc_image = read_image(image)
         proc_image = proc_image[None, ...]
         prediction = self._model.predict(proc_image)
         return self._postprocess(prediction)

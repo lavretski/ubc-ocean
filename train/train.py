@@ -1,59 +1,69 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from train.tools import (get_labels, check_gpu, \
-    BalancedSparseCategoricalAccuracy, \
-    get_class_weights, StandardizationLayer)
+from train.tools import (check_gpu, \
+    BalancedSparseCategoricalAccuracy, read_image)
 from tools import cancer_to_number
+import pandas as pd
+import numpy as np
 
 
 def train(model: tf.keras.Model, data_dir: str, csv_file: str,
           image_size: tuple[int, int],
           batch_size: int, validation_split: int,
           random_seed: int, epochs: int, lr: float,
-          save_model_path: str, rescale_multiplier: float,
+          save_model_path: str,
           use_thumbnails: bool) -> None:
-    labels = get_labels(data_dir, csv_file, use_thumbnails)
-    integer_labels = [cancer_to_number[label] for label in labels]
+    df = pd.read_csv(csv_file)
 
-    train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
-        data_dir,
-        labels=integer_labels,
-        validation_split=validation_split,
-        subset="both",
-        seed=random_seed,
-        batch_size=batch_size,
-        label_mode='int')
+    if use_thumbnails:
+        df = df[df["is_tma"] == False]
+    
+    image_id_col = "image_id"
+    label_col = "label"
+    image_pathes_col = "image_pathes"
 
-    data_aug_train = keras.Sequential([#layers.RandomFlip("horizontal_and_vertical"),
-                                       #layers.Rescaling(rescale_multiplier),
-                                       layers.Resizing(*image_size),
-                                       StandardizationLayer(),])
+    df[image_pathes_col] = df[image_id_col].astype('str')
+    df[image_pathes_col] = df[image_pathes_col].apply(lambda x: f"{data_dir}/{x}{'_thumbnail' if use_thumbnails else ''}.png")
+    
+    x = (
+        tf.data.Dataset.from_tensor_slices(df[image_pathes_col].values)
+        .map(lambda image_path: read_image(image_path, image_size), num_parallel_calls=tf.data.AUTOTUNE)
+    )
 
-    data_aug_val = keras.Sequential([layers.Resizing(*image_size),
-                                     StandardizationLayer(),
-                                     #layers.Rescaling(rescale_multiplier)
-                                     ])
+    integer_labels = [cancer_to_number[label] for label in df[label_col].values]
+    y = tf.data.Dataset.from_tensor_slices(integer_labels)
 
-    train_ds = train_ds.map(lambda img, label: 
-                                (data_aug_train(img), label),
-                            num_parallel_calls=tf.data.AUTOTUNE)
+    ds = tf.data.Dataset.zip((x, y))
 
-    val_ds = val_ds.map(lambda img, label:
-                            (data_aug_val(img), label),
-                        num_parallel_calls=tf.data.AUTOTUNE)
-                        
+    val_len = int(len(df) * validation_split)
+    
+    val_ds = (
+        ds
+        .take(val_len)
+        .batch(batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+    train_ds = (
+        ds
+        .skip(val_len)
+        .batch(batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
     check_gpu()
 
     model.compile(optimizer=keras.optimizers.Adam(lr),
                   loss="sparse_categorical_crossentropy",
                   metrics=["accuracy"])
 
+    class_weights = len(integer_labels) - np.bincount(integer_labels)
+    class_weights = class_weights / np.sum(class_weights)
+    class_weights = {idx: weight for idx, weight in enumerate(class_weights)}
+
     model.fit(train_ds, epochs=epochs,
               validation_data=val_ds,
-              class_weight=get_class_weights(data_dir,
-                                             csv_file,
-                                             use_thumbnails))
+              class_weight=class_weights)
 
     model.save(save_model_path)
 
