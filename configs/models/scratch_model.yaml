@@ -1,0 +1,7 @@
+model:
+  type: train.models.make_scratch_model
+  image_size: [512, 512, 3]
+  num_classes: ${num_classes}
+
+image_size: [512, 512]
+weights_file: metadata/scratch_weights.h5

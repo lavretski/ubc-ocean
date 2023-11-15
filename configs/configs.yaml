@@ -1,7 +1,7 @@
 defaults:
   - _self_
   - train_configs
-  - model/scratch_model
+  - models/aritra_model
 
 train_csv_file: /kaggle/input/UBC-OCEAN/train.csv
 test_csv_file: /kaggle/input/UBC-OCEAN/test.csv
@@ -17,21 +17,22 @@ tasks:
 tasks_descr:
   train:
     script_id: train.train
-    model: ${train_model}
+    model: ${models.model}
     data_dir: ${train_data_dir}
     csv_file: ${train_csv_file}
-    image_size: ${image_size}
+    image_size: ${models.image_size}
     batch_size: ${batch_size}
     validation_split: ${validation_split}
     random_seed: ${random_seed}
     epochs: ${epochs}
     lr: ${lr}
-    save_model_path: ${save_model_path}
+    save_weights_file: ${models.weights_file}
     use_thumbnails: ${use_thumbnails}
 
   make_submission:
     script_id: scripts.make_submission
-    model: ${model}
+    model: ${models.model}
+    image_size: ${models.image_size}
     test_csv_file: ${test_csv_file}
     test_data_dir: ${test_data_dir}
     submission_csv_file: ${submission_csv_file}

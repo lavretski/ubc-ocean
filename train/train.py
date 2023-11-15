@@ -12,7 +12,7 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
           image_size: tuple[int, int],
           batch_size: int, validation_split: int,
           random_seed: int, epochs: int, lr: float,
-          save_model_path: str,
+          save_weights_file: str,
           use_thumbnails: bool) -> None:
     df = pd.read_csv(csv_file)
 
@@ -65,6 +65,6 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
               validation_data=val_ds,
               class_weight=class_weights)
 
-    model.save(save_model_path)
+    model.save_weights(save_weights_file)
 
 main = train

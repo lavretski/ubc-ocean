@@ -1,0 +1,6 @@
+model:
+  type: train.models.make_aritra_model
+
+weights_file: metadata/aritra_weights.h5
+image_size: [256, 256]
+

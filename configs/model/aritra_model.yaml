@@ -1,3 +1,0 @@
-type: models.aritra_model.AritraModel
-model_file: metadata/aritra_model.h5
-image_size: [256, 256]
