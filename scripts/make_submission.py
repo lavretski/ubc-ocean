@@ -12,8 +12,7 @@ def make_submission(model: Model, test_csv_file: str, test_data_dir: str,
     for image_id in df_test['image_id']:
         path = Path(test_data_dir) / str(image_id)
         suffix = "_thumbnail" if use_thumbnails else ""
-        image = cv2.imread(f"{path}{suffix}.png")
-        label = model.predict(image)
+        label = model.predict(f"{path}{suffix}.png")
         labels.append(label)
 
     df_test.drop(["image_width", "image_height"], axis=1, inplace=True)

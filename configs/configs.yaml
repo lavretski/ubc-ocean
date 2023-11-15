@@ -1,7 +1,7 @@
 defaults:
   - _self_
   - train_configs
-  - model/aritra_model
+  - model/scratch_model
 
 train_csv_file: /kaggle/input/UBC-OCEAN/train.csv
 test_csv_file: /kaggle/input/UBC-OCEAN/test.csv
@@ -11,7 +11,7 @@ test_data_dir: /kaggle/input/UBC-OCEAN/test_thumbnails
 use_thumbnails: True
 
 tasks:
-  # - train
+  - train
   - make_submission
   
 tasks_descr:

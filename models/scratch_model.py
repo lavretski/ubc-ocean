@@ -4,17 +4,16 @@ from keras import layers
 import numpy as np
 from tools import number_to_cancer
 import keras
+from train.tools import read_image
 
 
 class ScratchModel(Model):
-    def __init__(self, model_file: str, image_size: tuple[int, int],
-                 rescale_multiplier: float):
+    def __init__(self, model_file: str, image_size: tuple[int, int]):
         self._model = load_model(model_file, compile=False)
-        self._preprocess_f = keras.Sequential([layers.Rescaling(rescale_multiplier),
-                                               layers.Resizing(*image_size)])
+        self._image_size = image_size
 
-    def predict(self, image: np.ndarray) -> str:
-        proc_image = self._preprocess_f(image)
+    def predict(self, image_path: str) -> str:
+        proc_image = read_image(image_path, self._image_size)
         proc_image = proc_image[None, ...]
         prediction = self._model.predict(proc_image)
         return self._postprocess(prediction)
