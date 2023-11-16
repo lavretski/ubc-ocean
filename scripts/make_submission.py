@@ -6,7 +6,8 @@ import numpy as np
 from tools import number_to_cancer
 
 
-def make_submission(model: tf.keras.Model, test_csv_file: str, test_data_dir: str, 
+def make_submission(model: tf.keras.Model, model_weights: str,
+                    test_csv_file: str, test_data_dir: str, 
                     submission_csv_file: str, use_thumbnails: bool,
                     image_size: tuple[int, int]) -> None:
     df_test = pd.read_csv(test_csv_file)
@@ -16,6 +17,7 @@ def make_submission(model: tf.keras.Model, test_csv_file: str, test_data_dir: st
         path = Path(test_data_dir) / str(image_id)
         suffix = "_thumbnail" if use_thumbnails else ""
 
+        model.load_weights(model_weights)
         proc_image = read_image(f"{path}{suffix}.png", image_size)
         proc_image = proc_image[None, ...]
         prediction = model.predict(proc_image)

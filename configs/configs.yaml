@@ -32,6 +32,7 @@ tasks_descr:
   make_submission:
     script_id: scripts.make_submission
     model: ${models.model}
+    model_weights: ${models.weights_file}
     image_size: ${models.image_size}
     test_csv_file: ${test_csv_file}
     test_data_dir: ${test_data_dir}
