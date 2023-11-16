@@ -28,6 +28,7 @@ tasks_descr:
     lr: ${lr}
     save_weights_file: ${models.weights_file}
     use_thumbnails: ${use_thumbnails}
+    crop_size_increment: ${crop_size_increment}
 
   make_submission:
     script_id: scripts.make_submission

@@ -7,7 +7,7 @@ import keras_cv
 def make_scratch_model(image_size: tuple[int, int], num_classes: int) \
     -> tf.keras.Model:
     # https://keras.io/examples/vision/image_classification_from_scratch/
-        inputs = keras.Input(shape=image_size)
+        inputs = keras.Input(shape=image_size + [3])
 
         x = layers.Conv2D(128, 3, strides=2, padding="same")(inputs)
         x = layers.BatchNormalization()(x)

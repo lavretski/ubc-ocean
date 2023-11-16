@@ -34,6 +34,20 @@ class BalancedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
         return super().update_state(y_true, y_pred, sample_weight=weight)
 
 
+def read_image_train(image_path: str, image_size: tuple[int, int], 
+                     crop_size_increment: int) -> tf.Tensor:
+    file = tf.io.read_file(image_path)
+    image = tf.io.decode_png(file, 3)
+    image = tf.image.resize(image, [image_size[0]+crop_size_increment, 
+                                    image_size[1]+crop_size_increment])
+    image = tf.image.random_crop(image, size=image_size + [3])
+    image = tf.image.random_flip_left_right(image)
+    image = tf.image.random_flip_up_down(image)
+
+    image = tf.image.per_image_standardization(image)
+    return image
+
+
 def read_image(image_path: str, image_size: tuple[int, int]) -> tf.Tensor:
     file = tf.io.read_file(image_path)
     image = tf.io.decode_png(file, 3)

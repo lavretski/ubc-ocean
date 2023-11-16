@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from train.tools import (check_gpu, \
-    BalancedSparseCategoricalAccuracy, read_image)
+    BalancedSparseCategoricalAccuracy, read_image_train)
 from tools import cancer_to_number
 import pandas as pd
 import numpy as np
@@ -13,7 +13,7 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
           batch_size: int, validation_split: int,
           random_seed: int, epochs: int, lr: float,
           save_weights_file: str,
-          use_thumbnails: bool) -> None:
+          use_thumbnails: bool, crop_size_increment: int) -> None:
     df = pd.read_csv(csv_file)
 
     if use_thumbnails:
@@ -28,7 +28,7 @@ def train(model: tf.keras.Model, data_dir: str, csv_file: str,
     
     x = (
         tf.data.Dataset.from_tensor_slices(df[image_pathes_col].values)
-        .map(lambda image_path: read_image(image_path, image_size), num_parallel_calls=tf.data.AUTOTUNE)
+        .map(lambda image_path: read_image_train(image_path, image_size, crop_size_increment), num_parallel_calls=tf.data.AUTOTUNE)
     )
 
     integer_labels = [cancer_to_number[label] for label in df[label_col].values]

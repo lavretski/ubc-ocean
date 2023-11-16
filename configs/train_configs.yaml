@@ -1,6 +1,7 @@
 batch_size: 8
-validation_split: 0.1
+validation_split: 0.2
 random_seed: 42
-epochs: 5
-lr: 0.0001
+epochs: 15
+lr: 0.001
 num_classes: 5
+crop_size_increment: 10

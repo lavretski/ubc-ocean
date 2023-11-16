@@ -1,6 +1,6 @@
 model:
   type: train.models.make_scratch_model
-  image_size: [512, 512, 3]
+  image_size: ${image_size}
   num_classes: ${num_classes}
 
 image_size: [512, 512]
