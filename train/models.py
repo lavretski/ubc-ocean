@@ -60,3 +60,21 @@ def make_aritra_model() -> tf.keras.Model:
     outputs = keras.layers.Dense(units=5, activation="softmax")(x)
 
     return keras.Model(inputs=image_inputs, outputs=outputs)
+
+
+def make_effnet_model(image_size: tuple[int, int]) -> tf.keras.Model:
+    # https://www.kaggle.com/code/thangnm1/baseline-public-0-44
+    from tensorflow.keras.applications import EfficientNetV2S
+
+    effnet_backbone  = EfficientNetV2S(
+                include_top=False,
+                weights="imagenet", 
+                input_shape=image_size+[3])
+    effnet_backbone.trainable = False
+
+    image_inputs = effnet_backbone.input
+    image_embeddings = effnet_backbone(image_inputs)
+    image_embeddings = keras.layers.GlobalAveragePooling2D()(image_embeddings)
+    outputs = keras.layers.Dense(units=5, activation="softmax")(x)
+
+    return keras.Model(inputs=image_inputs, outputs=outputs)

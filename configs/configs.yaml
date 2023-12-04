@@ -1,7 +1,7 @@
 defaults:
   - _self_
   - train_configs
-  - models/aritra_model
+  - models/effnet_model
 
 train_csv_file: /kaggle/input/UBC-OCEAN/train.csv
 test_csv_file: /kaggle/input/UBC-OCEAN/test.csv

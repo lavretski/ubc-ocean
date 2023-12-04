@@ -1,0 +1,6 @@
+model:
+  type: train.models.make_effnet_model
+  image_size: ${models.image_size}
+
+weights_file: metadata/effnet_weights.h5
+image_size: [256, 256]
